@@ -63,3 +63,22 @@ export async function deleteFromLibrary(id) {
 export function getImageUrl(filename) {
   return `${BASE}/api/library/image/${filename}`;
 }
+
+export async function getSettings() {
+  const res = await fetch(`${BASE}/api/settings`);
+  if (!res.ok) throw new Error("Ayarlar yüklenemedi");
+  return res.json();
+}
+
+export async function saveSettings(data) {
+  const res = await fetch(`${BASE}/api/settings`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Ayarlar kaydedilemedi");
+  }
+  return res.json();
+}

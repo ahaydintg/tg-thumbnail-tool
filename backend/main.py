@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from database import init_db
-from routers import prompt, generate, library
+from routers import prompt, generate, library, settings
 
 
 @asynccontextmanager
@@ -24,6 +24,7 @@ app.add_middleware(
 app.include_router(prompt.router)
 app.include_router(generate.router)
 app.include_router(library.router)
+app.include_router(settings.router)
 
 
 @app.get("/")
