@@ -2,6 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Renk Temaları ───────────────────────────────────────────── */
+/* Değerler RGB triplet formatında (Tailwind opacity varyantları için) */
+
+:root,
+[data-theme="blue"] {
+  --brand-50:  239 246 255;
+  --brand-500:  99 130 246;
+  --brand-600:  59  91 219;
+  --brand-700:  44  71 197;
+}
+
+[data-theme="purple"] {
+  --brand-50:  250 245 255;
+  --brand-500: 168  85 247;
+  --brand-600: 147  51 234;
+  --brand-700: 126  34 206;
+}
+
+[data-theme="yellow"] {
+  --brand-50:  255 251 235;
+  --brand-500: 245 158  11;
+  --brand-600: 217 119   6;
+  --brand-700: 180  83   9;
+}
+
+[data-theme="black"] {
+  --brand-50:  248 250 252;
+  --brand-500: 100 116 139;
+  --brand-600:  71  85 105;
+  --brand-700:  51  65  85;
+}
+
 @layer base {
   body {
     @apply bg-gray-950 text-gray-100 min-h-screen m-0;
