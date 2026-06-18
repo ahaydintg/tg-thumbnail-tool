@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ThumbnailCard from "./ThumbnailCard";
 import AddThumbnailModal from "./AddThumbnailModal";
 import { getLibrary, deleteFromLibrary } from "../../hooks/useApi";
@@ -8,7 +8,10 @@ export default function LibraryTab() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState([]);
   const [filter, setFilter] = useState("all");
+  const [pageDragging, setPageDragging] = useState(false);
+  const dragCounter = useRef(0);
 
   const load = async () => {
     setLoading(true);
@@ -35,6 +38,31 @@ export default function LibraryTab() {
     setThumbnails((prev) => [thumbnail, ...prev]);
   };
 
+  const openModalWithFiles = (files) => {
+    const images = Array.from(files).filter((f) => f.type.startsWith("image/"));
+    if (images.length === 0) return;
+    setPendingFiles(images);
+    setShowModal(true);
+  };
+
+  const handlePageDragEnter = (e) => {
+    e.preventDefault();
+    dragCounter.current++;
+    if (e.dataTransfer.types.includes("Files")) setPageDragging(true);
+  };
+
+  const handlePageDragLeave = () => {
+    dragCounter.current--;
+    if (dragCounter.current === 0) setPageDragging(false);
+  };
+
+  const handlePageDrop = (e) => {
+    e.preventDefault();
+    dragCounter.current = 0;
+    setPageDragging(false);
+    openModalWithFiles(e.dataTransfer.files);
+  };
+
   const filtered =
     filter === "all"
       ? thumbnails
@@ -44,7 +72,21 @@ export default function LibraryTab() {
   const nightCount = thumbnails.filter((t) => t.mode === "night").length;
 
   return (
-    <div className="p-6 h-full overflow-y-auto">
+    <div
+      className="p-6 h-full overflow-y-auto relative"
+      onDragEnter={handlePageDragEnter}
+      onDragOver={(e) => e.preventDefault()}
+      onDragLeave={handlePageDragLeave}
+      onDrop={handlePageDrop}
+    >
+      {/* Page-wide drag overlay */}
+      {pageDragging && (
+        <div className="absolute inset-0 z-40 bg-brand-600/10 border-4 border-dashed border-brand-500 rounded-xl flex flex-col items-center justify-center pointer-events-none">
+          <span className="text-5xl mb-3">📂</span>
+          <p className="text-brand-300 font-bold text-xl">Görselleri bırak</p>
+          <p className="text-brand-400 text-sm mt-1">Mod seçimi için ekran açılacak</p>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -57,7 +99,7 @@ export default function LibraryTab() {
         </div>
         <button
           type="button"
-          onClick={() => setShowModal(true)}
+          onClick={() => { setPendingFiles([]); setShowModal(true); }}
           className="btn-primary"
         >
           + Thumbnail Ekle
@@ -106,7 +148,7 @@ export default function LibraryTab() {
           </p>
           <button
             type="button"
-            onClick={() => setShowModal(true)}
+            onClick={() => { setPendingFiles([]); setShowModal(true); }}
             className="btn-primary mt-2"
           >
             İlk Thumbnail'ı Ekle
@@ -122,8 +164,9 @@ export default function LibraryTab() {
 
       {showModal && (
         <AddThumbnailModal
-          onClose={() => setShowModal(false)}
+          onClose={() => { setShowModal(false); setPendingFiles([]); }}
           onAdded={handleAdded}
+          initialFiles={pendingFiles}
         />
       )}
     </div>
