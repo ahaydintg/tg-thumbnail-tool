@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-950 text-gray-100 min-h-screen m-0;
+    font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  #root {
+    @apply min-h-screen;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-brand-600 hover:bg-brand-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer;
+  }
+  .btn-secondary {
+    @apply bg-gray-700 hover:bg-gray-600 text-white font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer;
+  }
+  .btn-danger {
+    @apply bg-red-700 hover:bg-red-600 text-white font-medium px-3 py-1.5 rounded-lg transition-colors cursor-pointer text-sm;
+  }
+  .card {
+    @apply bg-gray-900 border border-gray-800 rounded-xl p-4;
+  }
+  .input {
+    @apply bg-gray-800 border border-gray-700 text-gray-100 rounded-lg px-3 py-2 w-full focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 placeholder-gray-500;
+  }
+  .textarea {
+    @apply bg-gray-800 border border-gray-700 text-gray-100 rounded-lg px-3 py-2 w-full focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 placeholder-gray-500 resize-none;
+  }
+  .label {
+    @apply block text-sm font-medium text-gray-300 mb-1;
+  }
+  .section-title {
+    @apply text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3;
+  }
+}
