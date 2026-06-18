@@ -2,7 +2,15 @@ import anthropic
 import base64
 from config import ANTHROPIC_API_KEY
 
-client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+_client = None
+
+def get_client():
+    global _client
+    if _client is None:
+        if not ANTHROPIC_API_KEY:
+            raise ValueError("ANTHROPIC_API_KEY .env dosyasında tanımlanmamış.")
+        _client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    return _client
 
 SYSTEM_PROMPT = """You are an expert AI image prompt engineer specializing in creating highly detailed, technically precise prompts for thumbnail generation. Your prompts must be comprehensive, covering every visual and technical aspect needed to produce a stunning, click-worthy thumbnail.
 
@@ -126,7 +134,7 @@ async def generate_prompt(
         attachments=attachments,
     )
 
-    response = client.messages.create(
+    response = get_client().messages.create(
         model="claude-opus-4-8",
         max_tokens=4096,
         system=SYSTEM_PROMPT,

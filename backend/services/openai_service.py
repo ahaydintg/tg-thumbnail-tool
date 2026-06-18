@@ -2,7 +2,15 @@ import openai
 import base64
 from config import OPENAI_API_KEY
 
-client = openai.OpenAI(api_key=OPENAI_API_KEY)
+_client = None
+
+def get_client():
+    global _client
+    if _client is None:
+        if not OPENAI_API_KEY:
+            raise ValueError("OPENAI_API_KEY .env dosyasında tanımlanmamış.")
+        _client = openai.OpenAI(api_key=OPENAI_API_KEY)
+    return _client
 
 
 def extract_final_prompt(full_prompt: str) -> str:
@@ -34,14 +42,14 @@ async def generate_image(prompt: str, attachments: list[dict] | None = None) -> 
                 "content": input_images + [{"type": "text", "text": final_prompt}],
             }
         ]
-        response = client.responses.create(
+        response = get_client().responses.create(
             model="gpt-image-1",
             input=messages,
             modalities=["image"],
         )
         image_data = response.output[0].result[0].b64_json
     else:
-        response = client.images.generate(
+        response = get_client().images.generate(
             model="gpt-image-1",
             prompt=final_prompt,
             n=1,

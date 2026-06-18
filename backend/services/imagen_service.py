@@ -3,7 +3,15 @@ from google import genai
 from google.genai import types
 from config import GOOGLE_API_KEY
 
-client = genai.Client(api_key=GOOGLE_API_KEY)
+_client = None
+
+def get_client():
+    global _client
+    if _client is None:
+        if not GOOGLE_API_KEY:
+            raise ValueError("GOOGLE_API_KEY .env dosyasında tanımlanmamış.")
+        _client = genai.Client(api_key=GOOGLE_API_KEY)
+    return _client
 
 
 def extract_final_prompt(full_prompt: str) -> str:
@@ -26,7 +34,7 @@ async def generate_image(prompt: str, model: str = "imagen-3.0-generate-001") ->
     final_prompt = extract_final_prompt(prompt)
     negative_prompt = extract_negative_prompt(prompt)
 
-    response = client.models.generate_images(
+    response = get_client().models.generate_images(
         model=model,
         prompt=final_prompt,
         config=types.GenerateImagesConfig(
