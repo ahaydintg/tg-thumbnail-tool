@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ThumbnailCard from "./ThumbnailCard";
 import AddThumbnailModal from "./AddThumbnailModal";
 import { getLibrary, deleteFromLibrary } from "../../hooks/useApi";
@@ -8,7 +8,10 @@ export default function LibraryTab() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [droppedFiles, setDroppedFiles] = useState([]);
+  const [dragging, setDragging] = useState(false);
   const [filter, setFilter] = useState("all");
+  const dragCounter = useRef(0);
 
   const load = async () => {
     setLoading(true);
@@ -35,6 +38,44 @@ export default function LibraryTab() {
     setThumbnails((prev) => [thumbnail, ...prev]);
   };
 
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    dragCounter.current++;
+    if (e.dataTransfer.types.includes("Files")) setDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    dragCounter.current--;
+    if (dragCounter.current === 0) setDragging(false);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    dragCounter.current = 0;
+    setDragging(false);
+    const files = Array.from(e.dataTransfer.files).filter((f) =>
+      f.type.startsWith("image/")
+    );
+    if (files.length === 0) return;
+    setDroppedFiles(files);
+    setShowModal(true);
+  };
+
+  const openModal = () => {
+    setDroppedFiles([]);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setDroppedFiles([]);
+  };
+
   const filtered =
     filter === "all"
       ? thumbnails
@@ -44,7 +85,24 @@ export default function LibraryTab() {
   const nightCount = thumbnails.filter((t) => t.mode === "night").length;
 
   return (
-    <div className="p-6 h-full overflow-y-auto">
+    <div
+      className="p-6 h-full overflow-y-auto relative"
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
+      {/* Drag overlay */}
+      {dragging && (
+        <div className="absolute inset-0 z-40 bg-brand-600/20 border-4 border-dashed border-brand-500 rounded-xl flex items-center justify-center pointer-events-none">
+          <div className="text-center">
+            <div className="text-5xl mb-3">🖼️</div>
+            <p className="text-white font-bold text-xl">Görselleri bırak</p>
+            <p className="text-brand-300 text-sm mt-1">Tüm görseller kütüphaneye eklenecek</p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -53,11 +111,12 @@ export default function LibraryTab() {
             Prompt üretiminde visual style referansı olarak kullanılır.
             <span className="ml-3 text-amber-400">☀️ {dayCount} gündüz</span>
             <span className="ml-2 text-indigo-400">🌙 {nightCount} gece</span>
+            <span className="ml-3 text-gray-600 text-xs">— görselleri sürükleyip bırakarak da ekleyebilirsin</span>
           </p>
         </div>
         <button
           type="button"
-          onClick={() => setShowModal(true)}
+          onClick={openModal}
           className="btn-primary"
         >
           + Thumbnail Ekle
@@ -102,11 +161,11 @@ export default function LibraryTab() {
           <span className="text-5xl">🖼️</span>
           <p className="font-medium">Kütüphanede thumbnail yok</p>
           <p className="text-sm text-gray-600">
-            Thumbnail ekleyerek visual style referansları oluştur
+            Görselleri sürükleyip bırak ya da butona tıkla
           </p>
           <button
             type="button"
-            onClick={() => setShowModal(true)}
+            onClick={openModal}
             className="btn-primary mt-2"
           >
             İlk Thumbnail'ı Ekle
@@ -122,8 +181,9 @@ export default function LibraryTab() {
 
       {showModal && (
         <AddThumbnailModal
-          onClose={() => setShowModal(false)}
+          onClose={closeModal}
           onAdded={handleAdded}
+          initialFiles={droppedFiles}
         />
       )}
     </div>
